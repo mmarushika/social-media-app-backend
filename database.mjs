@@ -10,7 +10,7 @@ const __dirname = dirname(__filename);
 const uri = "mongodb://127.0.0.1:27017";
 const client = new MongoClient(uri);
 
-export async function getImageFilepath(id) {
+/*export async function getImageFilepath(id) {
     try {
         const db = client.db("test");
         const result = await db.collection("posts").findOne({_id : `{id}`});
@@ -19,7 +19,7 @@ export async function getImageFilepath(id) {
     } finally {
         //await client.close();
     }
-}
+}*/
 
 export async function sendMessage(data) {
     try {
@@ -30,15 +30,28 @@ export async function sendMessage(data) {
         //await client.close();
     }
 }
-export async function getMessages() {
+export async function getMessages(sender, receiver) {
     try {
         const db = client.db("test");
         const messages = db.collection("messages");
         const result = [];
-        const cursor = messages.find({});
+        const cursor = messages.find(
+            {$or: [
+                {
+                    sender: sender,
+                    receiver: receiver
+                }, 
+                {   
+                    sender: receiver , 
+                    receiver: sender
+                }
+            ]}
+        );
+
         for await (const doc of cursor) {
             result.push(doc);
         }
+        console.log(sender, receiver, result);
         return result;
     } finally {
         //await client.close();

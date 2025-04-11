@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 
 // https://stackoverflow.com/questions/8817423/why-is-dirname-not-defined-in-node-repl
 
-import {getMessages, sendMessage, getPosts, makePost, getDMList, getImageFilepath} from "./database.mjs"
+import {getMessages, sendMessage, getPosts, makePost, getDMList} from "./database.mjs"
 
 const app = express();
 const port = 8000;
@@ -63,7 +63,9 @@ app.get("/messages", async (req, res) => {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
     });
-    const messages = await getMessages().catch(console.dir);
+    const sender = req.query.sender;
+    const receiver = req.query.receiver;
+    const messages = await getMessages(sender, receiver).catch(console.dir);
     //console.log(messages);
     res.send(JSON.stringify(messages));
 });

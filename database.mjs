@@ -100,6 +100,7 @@ export async function getDMList(sender) {
 export async function makePost(data) {
     try {
         data.imageFilepath =  __dirname + "/assets/posts/" + data.imageFilepath;
+        console.log(data.imageFilepath);
         const db = client.db("test");
         const messages = db.collection("posts");
         messages.insertOne(data);
@@ -113,11 +114,11 @@ export async function getPosts(username) {
         const db = client.db("test");
         const posts = db.collection("posts");
         const result = [];
-        const cursor = posts.find({author : username }); // creator
+        const cursor = posts.find({creator : username }); // creator
         for await (const doc of cursor) {
             result.push(doc);
         }
-        console.log(username, result);
+        //console.log(username, result);
         return result;
     } finally {
         //await client.close();
@@ -129,12 +130,8 @@ export async function getPosts(username) {
 export async function getProfile(username) {
     try {
         const db = client.db("test");
-        const messages = db.collection("profiles");
-        const result = [];
-        const cursor = messages.find({author : username});
-        for await (const doc of cursor) {
-            result.push(doc);
-        }
+        const profiles = db.collection("profiles");
+        const result = await profiles.findOne({username : username});
         return result;
     } finally {
         //await client.close();
@@ -144,7 +141,7 @@ export async function getProfile(username) {
 
 export async function addProfile(data) {
     data.imageFilepath =  __dirname + "/assets/profiles/" + data.imageFilepath;
-    console.log(data);
+    //console.log(data);
     try {
         const db = client.db("test");
         const profiles = db.collection("profiles");
@@ -156,7 +153,7 @@ export async function addProfile(data) {
 }
 
 export async function addSettings(data) {
-    console.log(data);
+    //console.log(data);
     try {
         const db = client.db("test");
         const settings = db.collection("settings");

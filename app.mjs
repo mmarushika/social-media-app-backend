@@ -11,9 +11,9 @@ const __dirname = dirname(__filename);
 
 // https://stackoverflow.com/questions/8817423/why-is-dirname-not-defined-in-node-repl
 
-import {getMessages, getProfile, getPosts, getDMList} from "./services/database.mjs"
-import {sendMessage, makePost, addProfile, addSettings} from "./services/database.mjs";
-import {authenticate, signup} from "./services/database.mjs";
+import {getMessages, getProfile, getPosts, getDMList} from "./database.mjs"
+import {sendMessage, makePost, addProfile, addSettings} from "./database.mjs";
+import {authenticate, signup} from "./database.mjs";
 
 const app = express();
 const port = 8000;
@@ -51,6 +51,7 @@ app.get("/posts", async (req, res) => {
         "Access-Control-Allow-Origin": "*",
     })
     const data = await getPosts(req.query.username).catch(console.dir);
+    console.log("posts", data);
     res.send(JSON.stringify(data));
     /*getPosts().catch(console.dir)
         .then(
@@ -72,23 +73,21 @@ app.get('/image', async (req, res) => {
         "Access-Control-Allow-Origin": "*",
     });
     console.log(req.query.filepath);
-    res.sendFile(req.query.filepath, () => {
-        console.log("sent");
-    });
+    if(req.query.filepath !== "") {
+        res.sendFile(req.query.filepath, () => {
+            //console.log("sent", req.query.filepath);
+        });
+    } else {
+        res.end();
+    }
 });
 app.post('/upload/posts', function(req, res) {
-    let uploadPath;
-  
-    /*if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).send('No files were uploaded.');
-    }*/
     res.set({
         "Access-Control-Allow-Origin": "*",
     });
 
     const file = req.files.file;
-    const uploadFolder = 
-    uploadPath = __dirname + "/assets/posts/" + file.name;
+    const uploadPath = __dirname + "/assets/posts/" + file.name;
     console.log(uploadPath);
   
     // Use the mv() method to place the file somewhere on your server
@@ -98,19 +97,13 @@ app.post('/upload/posts', function(req, res) {
   });
 
   app.post('/upload/profiles', function(req, res) {
-    let uploadPath;
-  
-    /*if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).send('No files were uploaded.');
-    }*/
     res.set({
         "Access-Control-Allow-Origin": "*",
     });
 
     const file = req.files.file;
-    const uploadFolder = 
-    uploadPath = __dirname + "/assets/profiles/" + file.name;
-    console.log(uploadPath);
+    const uploadPath = __dirname + "/assets/profiles/" + file.name;
+    console.log("upload path" ,uploadPath);
   
     // Use the mv() method to place the file somewhere on your server
     file.mv(uploadPath, function(err) {
@@ -157,7 +150,8 @@ app.get("/profile", async(req, res) => {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
     });
-    const profile = await getProfile(req.username);
+    const profile = await getProfile(req.query.username);
+    //console.log("profile", profile);
     res.send(JSON.stringify(profile));
 });
 
@@ -167,7 +161,7 @@ app.post("/new-profile", async(req, res) => {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
     });
-    console.log(req.body);
+    //console.log(req.body);
     addProfile(req.body.profile).catch(console.dir);
     addSettings(req.body.settings).catch(console.dir);
 });

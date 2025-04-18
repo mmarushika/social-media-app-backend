@@ -2,9 +2,24 @@ import { MongoClient } from "mongodb";
 // Run this program to insert message documents into collections
 // Collections : messages, posts => locally create these two collections
 
-run().catch(console.dir);
+//runInsertMessages().catch(console.dir);
+runInsertUsers().catch(console.dir);
 
-async function run() {
+async function runInsertUsers() {
+  const uri = "mongodb://127.0.0.1:27017";
+    const client = new MongoClient(uri);
+    const db = client.db("test");
+    const users = db.collection("profiles");
+    await messages.insertOne(
+      {
+        "username": "alice123",
+        "name": "Alice Adams",
+        "imageFilepath": "images/posts/IMG_2864.jpeg",
+        "description": "I am a test."
+      }
+    )
+}
+async function runInsertMessages() {
   try {
     const uri = "mongodb://127.0.0.1:27017";
     const client = new MongoClient(uri);

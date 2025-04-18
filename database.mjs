@@ -43,6 +43,21 @@ export async function signup(data) {
     }
 }
 
+// Users
+
+export async function getUsers() {
+    try {
+        console.log("dm=list");
+        const db = client.db("test");
+        const result = await db.collection("auth").distinct("username");
+        console.log("users", result)
+        return result;
+    } finally {
+        //await client.close();
+    }
+}
+
+
 // Messages 
 
 export async function sendMessage(data) {

@@ -11,7 +11,7 @@ const __dirname = dirname(__filename);
 
 // https://stackoverflow.com/questions/8817423/why-is-dirname-not-defined-in-node-repl
 
-import {getMessages, getProfile, getPosts, getDMList} from "./database.mjs"
+import {getMessages, getProfile, getPosts, getDMList, getUsers} from "./database.mjs"
 import {sendMessage, makePost, addProfile, addSettings} from "./database.mjs";
 import {authenticate, signup} from "./database.mjs";
 
@@ -43,6 +43,17 @@ app.post("/signup", async(req, res) => {
     });
     signup(req.body).catch(console.dir);
 });
+
+// Users
+app.get("/users", async (req, res) => {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+    })
+    const data = await getUsers().catch(console.dir);
+    res.send(JSON.stringify(data));
+});
+
 
 // Posts 
 app.get("/posts", async (req, res) => {

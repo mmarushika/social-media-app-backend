@@ -72,13 +72,14 @@ export async function getFollowers(username) {
     }
 }
 
-export async function getFollowing() {
+export async function getFollowing(username) {
     try {
         const db = client.db("test");
         const result = await db.collection("follows").distinct(
             "account", 
             {follower: username}
         )
+        console.log(result);
         return result;
     } finally {
         //await client.close();
@@ -105,8 +106,8 @@ export async function getFollowStatus(user, viewer) {
             { account : user, follower : viewer });
         const requestsResult = await db.collection("requests").findOne(
             { account : user, requester : viewer });
-        //console.log(user, viewer);
-        //console.log(followsResult, requestsResult);
+        console.log(user, viewer);
+        console.log(followsResult, requestsResult);
         if(followsResult != null) {
             return {status : "Unfollow"}
         } else if(requestsResult != null) {
@@ -140,15 +141,24 @@ export async function cancelFollowRequest(data) {
 export async function acceptFollowRequest(data) {
     try {
         const db = client.db("test");
-        const requests = db.collection("follows");
-        const requestDeleted = {account : data.account, requester}
-        requests.insertOne(data);
+        const requests = db.collection("requests");
+        const follows = db.collection("follows");
+        console.log(data);
+        requests.deleteOne(data).then(
+            console.log("removed request")
+        )
+        data = {account : data.account, follower : data.requester};
+        console.log(data);
+        follows.insertOne(data).then(
+            console.log("followed")
+        )
+        console.log("accepted follow request");
     } finally {
         //await client.close();
     }
 }
 
-export async function cancelFollow() {
+export async function cancelFollow(data) {
     try {
         const db = client.db("test");
         const follows = db.collection("follows");
@@ -199,7 +209,7 @@ export async function getMessages(sender, receiver) {
 
 export async function getDMList(sender) {
     try {
-        console.log("dm=list");
+        //console.log("dm=list");
         const db = client.db("test");
         const result = await db.collection("messages").distinct(
             "receiver", 

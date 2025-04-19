@@ -74,6 +74,7 @@ app.get("/following", async (req, res) => {
         "Access-Control-Allow-Origin": "*",
     })
     const data = await getFollowing(req.query.username).catch(console.dir);
+    console.log(data);
     res.send(JSON.stringify(data));
 });
 
@@ -120,7 +121,6 @@ app.post("/follow/request/accept", async (req, res) => {
         "Access-Control-Allow-Origin": "*",
     })
     acceptFollowRequest(req.body).catch(console.dir);
-    res.send(JSON.stringify(data));
 });
 
 app.post("/follow/cancel", async (req, res) => {
@@ -129,7 +129,6 @@ app.post("/follow/cancel", async (req, res) => {
         "Access-Control-Allow-Origin": "*",
     })
     cancelFollow(req.body).catch(console.dir);
-    res.send(JSON.stringify(data));
 });
 
 // Posts 

@@ -3,8 +3,20 @@ import { MongoClient } from "mongodb";
 // Collections : messages, posts => locally create these two collections
 
 //runInsertMessages().catch(console.dir);
-runInsertUsers().catch(console.dir);
-
+//runInsertUsers().catch(console.dir);
+cancelFollowRequest({ account: 'bob456', requester: 'alice123' });
+export async function cancelFollowRequest(data) {
+    try {
+        const uri = "mongodb://127.0.0.1:27017";
+        const client = new MongoClient(uri);
+        const db = client.db("test");
+        const requests = db.collection("requests");
+        requests.deleteOne(data);
+    } finally {
+        console.log("deleted");
+        //await client.close();
+    }
+}
 async function runInsertUsers() {
   const uri = "mongodb://127.0.0.1:27017";
     const client = new MongoClient(uri);

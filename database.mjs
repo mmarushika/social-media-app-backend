@@ -27,7 +27,7 @@ export async function authenticate(username, password) {
         const db = client.db("test");
         const auth = db.collection("auth");
         const res = await auth.findOne({username : username});
-        console.log(res.password);
+        //console.log(res.password);
         return res.password === password;
     } catch {
         console.log("error");
@@ -47,16 +47,116 @@ export async function signup(data) {
 
 export async function getUsers() {
     try {
-        console.log("dm=list");
+        //console.log("dm=list");
         const db = client.db("test");
         const result = await db.collection("auth").distinct("username");
-        console.log("users", result)
+        //console.log("users", result)
         return result;
     } finally {
         //await client.close();
     }
 }
 
+// Follow
+
+export async function getFollowers(username) {
+    try {
+        const db = client.db("test");
+        const result = await db.collection("follows").distinct(
+            "follower", 
+            {account: username}
+        )
+        return result;
+    } finally {
+        //await client.close();
+    }
+}
+
+export async function getFollowing() {
+    try {
+        const db = client.db("test");
+        const result = await db.collection("follows").distinct(
+            "account", 
+            {follower: username}
+        )
+        return result;
+    } finally {
+        //await client.close();
+    }
+}
+
+export async function getFollowRequests(username) {
+    try {
+        const db = client.db("test");
+        const result = await db.collection("requests").distinct(
+            "requester", 
+            {account: username}
+        )
+        return result;
+    } finally {
+        //await client.close();
+    }
+}
+
+export async function getFollowStatus(user, viewer) {
+    try {
+        const db = client.db("test");
+        const followsResult = await db.collection("follows").findOne(
+            { account : user, follower : viewer });
+        const requestsResult = await db.collection("requests").findOne(
+            { account : user, requester : viewer });
+        //console.log(user, viewer);
+        //console.log(followsResult, requestsResult);
+        if(followsResult != null) {
+            return {status : "Unfollow"}
+        } else if(requestsResult != null) {
+            return {status : "Requested"}
+        } else {
+            return {status : "Follow"}
+        }
+    } finally {
+        //await client.close();
+    }
+}
+export async function requestFollow(data) {
+    try {
+        const db = client.db("test");
+        const requests = db.collection("requests");
+        requests.insertOne(data);
+    } finally {
+        //await client.close();
+    }
+}
+export async function cancelFollowRequest(data) {
+    try {
+        const db = client.db("test");
+        const requests = db.collection("requests");
+        requests.deleteOne(data);
+    } finally {
+        console.log("deleted");
+        //await client.close();
+    }
+}
+export async function acceptFollowRequest(data) {
+    try {
+        const db = client.db("test");
+        const requests = db.collection("follows");
+        const requestDeleted = {account : data.account, requester}
+        requests.insertOne(data);
+    } finally {
+        //await client.close();
+    }
+}
+
+export async function cancelFollow() {
+    try {
+        const db = client.db("test");
+        const follows = db.collection("follows");
+        follows.deleteOne(data);
+    } finally {
+        //await client.close();
+    }
+}
 
 // Messages 
 
@@ -115,7 +215,7 @@ export async function getDMList(sender) {
 export async function makePost(data) {
     try {
         data.imageFilepath =  __dirname + "/assets/posts/" + data.imageFilepath;
-        console.log(data.imageFilepath);
+        //console.log(data.imageFilepath);
         const db = client.db("test");
         const messages = db.collection("posts");
         messages.insertOne(data);
@@ -153,6 +253,16 @@ export async function getProfile(username) {
     }
 }
 
+export async function getSettings(username) {
+    try {
+        const db = client.db("test");
+        const settings = db.collection("settings");
+        const result = await settings.findOne({username : username});
+        return result;
+    } finally {
+        //await client.close();
+    }
+}
 
 export async function addProfile(data) {
     data.imageFilepath =  __dirname + "/assets/profiles/" + data.imageFilepath;

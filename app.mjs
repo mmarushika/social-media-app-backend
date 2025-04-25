@@ -12,11 +12,11 @@ const __dirname = dirname(__filename);
 // https://stackoverflow.com/questions/8817423/why-is-dirname-not-defined-in-node-repl
 
 import { authenticate, signup, getUsers} from "./database.mjs";
-import { getMessages, getDMList, sendMessage } from "./database.mjs";
+//import { getMessages, getDMList, sendMessage } from "./database.mjs";
 import { getPosts, makePost } from "./database.mjs";
 import { getProfile, getSettings, addProfile, addSettings} from "./database.mjs";
 import { getFollowers, getFollowing, requestFollow, cancelFollowRequest,
-     acceptFollowRequest, cancelFollow, getFollowStatus, getFollowRequests } from "./database.mjs"
+     acceptFollowRequest, cancelFollow, getFollowStatus, getFollowRequests, getFollowsRequested } from "./database.mjs"
 
 const app = express();
 const port = 8000;
@@ -24,6 +24,10 @@ const port = 8000;
 app.use(fileUpload());
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
+app.use(cors({origin: true, credentials:true}));
+
+import { dmRoutes } from './routes/dmRoutes.mjs';
+app.use(dmRoutes)
 
 // Auth
 
@@ -74,7 +78,18 @@ app.get("/following", async (req, res) => {
         "Access-Control-Allow-Origin": "*",
     })
     const data = await getFollowing(req.query.username).catch(console.dir);
-    console.log(data);
+    //console.log(data);
+    res.send(JSON.stringify(data));
+});
+
+app.get("/followers/mutual", async (req, res) => {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+    })
+    const followers = await getFollowers(req.query.username).catch(console.dir);
+    const following = await getFollowing(req.query.username).catch(console.dir);
+    const data = followers.filter(i => following.includes(i));
     res.send(JSON.stringify(data));
 });
 
@@ -84,6 +99,15 @@ app.get("/follow/requests", async (req, res) => {
         "Access-Control-Allow-Origin": "*",
     })
     const data = await getFollowRequests(req.query.username).catch(console.dir);
+    res.send(JSON.stringify(data));
+});
+
+app.get("/follow/requested", async (req, res) => {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+    })
+    const data = await getFollowsRequested(req.query.username).catch(console.dir);
     res.send(JSON.stringify(data));
 });
 
@@ -111,7 +135,7 @@ app.post("/follow/request/cancel", async (req, res) => {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
     })
-    console.log(req.body);
+    //console.log(req.body);
     cancelFollowRequest(req.body).catch(console.dir);
 });
 
@@ -145,6 +169,19 @@ app.get("/posts", async (req, res) => {
             (posts) => res.send(JSON.stringify(posts))
         )*/
 });
+app.get("/posts/all", async (req, res) => {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+    })
+    const data = await getPosts("").catch(console.dir);
+    //console.log("posts", data);
+    res.send(JSON.stringify(data));
+    /*getPosts().catch(console.dir)
+        .then(
+            (posts) => res.send(JSON.stringify(posts))
+        )*/
+});
 
 app.post("/post", async (req, res) => {
     res.set({
@@ -161,7 +198,7 @@ app.get('/image', async (req, res) => {
     res.set({
         "Access-Control-Allow-Origin": "*",
     });
-    //console.log(req.query.filepath);
+    console.log(req.query.filepath);
     if(req.query.filepath !== "") {
         res.sendFile(req.query.filepath, () => {
             //console.log("sent", req.query.filepath);
@@ -200,38 +237,6 @@ app.post('/upload/posts', function(req, res) {
     });
   });
 
-// Messages
-
-app.get("/messages", async (req, res) => {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-    });
-    const sender = req.query.sender;
-    const receiver = req.query.receiver;
-    const messages = await getMessages(sender, receiver).catch(console.dir);
-    //console.log(messages);
-    res.send(JSON.stringify(messages));
-});
-
-app.get("/dm-list", async(req, res) => {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-    })
-    const data = await getDMList(req.query.sender).catch(console.dir);
-    res.send(JSON.stringify(data));
-})
-
-app.post("/send", async (req, res) => {
-    res.set({
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-    });
-    //(req.body);
-    sendMessage(req.body).catch(console.dir)
-})
-
 // Profile
 
 app.get("/profile", async(req, res) => {
@@ -260,7 +265,7 @@ app.post("/profile/new", async(req, res) => {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
     });
-    //console.log(req.body);
+    console.log(req.body);
     addProfile(req.body.profile).catch(console.dir);
     addSettings(req.body.settings).catch(console.dir);
 });
@@ -270,4 +275,3 @@ app.listen(port, () => {
     console.log(`listening on ${port}`);
 })
 
-app.use(cors({origin: true, credentials:true}));

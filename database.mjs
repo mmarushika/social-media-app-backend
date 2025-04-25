@@ -93,6 +93,21 @@ export async function getFollowRequests(username) {
             "requester", 
             {account: username}
         )
+        //console.log("follows requests", result);
+        return result;
+    } finally {
+        //await client.close();
+    }
+}
+
+export async function getFollowsRequested(username) {
+    try {
+        const db = client.db("test");
+        const result = await db.collection("requests").distinct(
+            "account", 
+            {requester: username}
+        )
+        //console.log("follows requested", result);
         return result;
     } finally {
         //await client.close();
@@ -106,8 +121,8 @@ export async function getFollowStatus(user, viewer) {
             { account : user, follower : viewer });
         const requestsResult = await db.collection("requests").findOne(
             { account : user, requester : viewer });
-        console.log(user, viewer);
-        console.log(followsResult, requestsResult);
+        //console.log(user, viewer);
+        //console.log(followsResult, requestsResult);
         if(followsResult != null) {
             return {status : "Unfollow"}
         } else if(requestsResult != null) {
@@ -132,6 +147,7 @@ export async function cancelFollowRequest(data) {
     try {
         const db = client.db("test");
         const requests = db.collection("requests");
+        //console.log(data);
         requests.deleteOne(data);
     } finally {
         console.log("deleted");
@@ -143,12 +159,12 @@ export async function acceptFollowRequest(data) {
         const db = client.db("test");
         const requests = db.collection("requests");
         const follows = db.collection("follows");
-        console.log(data);
+        //console.log(data);
         requests.deleteOne(data).then(
             console.log("removed request")
         )
         data = {account : data.account, follower : data.requester};
-        console.log(data);
+        //console.log(data);
         follows.insertOne(data).then(
             console.log("followed")
         )
@@ -174,6 +190,7 @@ export async function sendMessage(data) {
     try {
         const db = client.db("test");
         const messages = db.collection("messages");
+        //console.log(data);
         messages.insertOne(data);
     } finally {
         //await client.close();
@@ -183,7 +200,6 @@ export async function getMessages(sender, receiver) {
     try {
         const db = client.db("test");
         const messages = db.collection("messages");
-        const result = [];
         const cursor = messages.find(
             {$or: [
                 {
@@ -196,25 +212,26 @@ export async function getMessages(sender, receiver) {
                 }
             ]}
         );
-
-        for await (const doc of cursor) {
+        const result = await cursor.toArray();
+        /*for await (const doc of cursor) {
             result.push(doc);
-        }
-        console.log(sender, receiver, result);
+        }*/
+        console.log("get messages db", sender, receiver, result);
         return result;
     } finally {
         //await client.close();
     }
 }
 
-export async function getDMList(sender) {
+export async function getContacts(sender) {
     try {
-        //console.log("dm=list");
         const db = client.db("test");
         const result = await db.collection("messages").distinct(
             "receiver", 
             {sender: sender}
         )
+        //console.log(sender);
+        //console.log(result);
         return result;
     } finally {
         //await client.close();
@@ -239,7 +256,12 @@ export async function getPosts(username) {
         const db = client.db("test");
         const posts = db.collection("posts");
         const result = [];
-        const cursor = posts.find({creator : username }); // creator
+        let cursor = null;
+        if(username === "") {
+            cursor = posts.find({}); // all posts
+        } else {
+            cursor = posts.find({creator : username }); // creator
+        }
         for await (const doc of cursor) {
             result.push(doc);
         }

@@ -13,7 +13,7 @@ const __dirname = dirname(__filename);
 
 import { authenticate, signup, getUsers} from "./database.mjs";
 //import { getMessages, getDMList, sendMessage } from "./database.mjs";
-import { getPosts, makePost } from "./database.mjs";
+import { getPosts, getComments, makePost, makeComment } from "./database.mjs";
 import { getProfile, getSettings, addProfile, addSettings} from "./database.mjs";
 import { getFollowers, getFollowing, requestFollow, cancelFollowRequest,
      acceptFollowRequest, cancelFollow, getFollowStatus, getFollowRequests, getFollowsRequested } from "./database.mjs"
@@ -192,13 +192,33 @@ app.post("/post", async (req, res) => {
     makePost(req.body).catch(console.dir)
 })
 
+// Comments
+
+app.get("/comments", async (req, res) => {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+    })
+    const data = await getComments(req.query.post_id).catch(console.dir);
+    res.send(JSON.stringify(data));
+});
+
+app.post("/comment", async (req, res) => {
+    res.set({
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+    });
+    console.log(req.body);
+    makeComment(req.body).catch(console.dir)
+})
+
 // Send and Upload Images
 
 app.get('/image', async (req, res) => {
     res.set({
         "Access-Control-Allow-Origin": "*",
     });
-    console.log(req.query.filepath);
+    //console.log(req.query.filepath);
     if(req.query.filepath !== "") {
         res.sendFile(req.query.filepath, () => {
             //console.log("sent", req.query.filepath);

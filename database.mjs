@@ -272,6 +272,29 @@ export async function getPosts(username) {
     }
 }
 
+export async function makeComment(data) {
+    try {
+        const db = client.db("test");
+        const comments = db.collection("comments");
+        comments.insertOne(data);
+    } finally {
+        //await client.close();
+    }
+}
+
+export async function getComments(post_id) {
+    try {
+        const db = client.db("test");
+        const comments = db.collection("comments");
+        const cursor = comments.find({post_id : post_id }); // creator
+        const result = await cursor.toArray();
+        console.log(post_id, result);
+        return result;
+    } finally {
+        //await client.close();
+    }
+}
+
 // Profile 
 
 export async function getProfile(username) {
